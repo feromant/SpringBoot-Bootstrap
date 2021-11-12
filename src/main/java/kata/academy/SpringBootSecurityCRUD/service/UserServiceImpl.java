@@ -48,8 +48,12 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     @Override
     public User getUserByUsername(String username) {
-        return dao.getUserByName(username);
+        return dao.getUserByEmail(username);
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public User getUserByEmail(String email) { return dao.getUserByEmail(email); }
 
     @Transactional
     @Override
@@ -67,9 +71,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = dao.getUserByName(username);
-        if(user == null) {
-            throw new UsernameNotFoundException(String.format("User '%s' not found", username));
+        User user = dao.getUserByEmail(username);
+        if(user.getUsername() == null) {
+            throw new UsernameNotFoundException("User not found");
         }
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
                 true, true, true, true, getGrantedAuthorities(user));

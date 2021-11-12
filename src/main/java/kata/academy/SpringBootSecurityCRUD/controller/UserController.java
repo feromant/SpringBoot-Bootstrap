@@ -5,6 +5,8 @@ import kata.academy.SpringBootSecurityCRUD.model.User;
 import kata.academy.SpringBootSecurityCRUD.service.UserService;
 import kata.academy.SpringBootSecurityCRUD.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -39,23 +41,26 @@ public class UserController {
 		messages.add("I'm Spring MVC-SECURITY application");
 		messages.add("5.2.0 version by sep'19 ");
 		model.addAttribute("messages", messages);
-		return "hello";
+		return "access_denied";
 	}
 
-    @GetMapping("login")
-    public String loginPage() {
-        return "login";
-    }
+//    @GetMapping("login")
+//    public String loginPage() {
+//        return "login";
+//    }
 
 	@GetMapping("/admin")
-	public String getAllUsers(Model model) {
+	public String getAllUsers(@AuthenticationPrincipal UserDetails user, Model model) {
+//		model.addAttribute("user", userService.getUserById(id));
+		model.addAttribute("user", userService.getUserByUsername(user.getUsername()));
 		model.addAttribute("users", userService.getAllUsers());
 		return "index";
 	}
 
-	@GetMapping("user/{id}")
-	public String getUserById(@PathVariable("id") Long id, Model model) {
-		model.addAttribute("user", userService.getUserById(id));
+	@GetMapping("/user")
+	public String getUserById(@AuthenticationPrincipal UserDetails user, Model model) {
+		model.addAttribute("user", userService.getUserByUsername(user.getUsername()));
+//		model.addAttribute("user", userService.getUserById(id));
 		return "user";
 	}
 
@@ -64,16 +69,15 @@ public class UserController {
 		return roleService.getAllRoles();
 	}
 
-	@GetMapping("/admin/new")
-	public String addUser(Model model) {
-		model.addAttribute("user", new User());
-		return "new";
-	}
+//	@GetMapping("/admin/new")
+//	public String addUser(Model model) {
+//		model.addAttribute("user", new User());
+//		return "new";
+//	}
 
 	@PostMapping("/admin/new")
 	public String addUser(@ModelAttribute("user") User user,
 						  @RequestParam(value = "roles") Set<Role> roles) {
-
 		if (roles != null) {
 			for (Role role : roles) {
 				if ("ADMIN".equals(role.getRole())) {
@@ -89,11 +93,11 @@ public class UserController {
 		return "redirect:/admin";
 	}
 
-	@GetMapping("/admin/edit/{id}")
-	public String updateUserById(@PathVariable("id") Long id, Model model) {
-		model.addAttribute("user", userService.getUserById(id));
-		return "edit";
-	}
+//	@GetMapping("/admin/edit/{id}")
+//	public String updateUserById(@PathVariable("id") Long id, Model model) {
+//		model.addAttribute("user", userService.getUserById(id));
+//		return "edit";
+//	}
 
 	@PutMapping("/admin/edit/{id}")
 	public String updateUser(@ModelAttribute("user") User user,
