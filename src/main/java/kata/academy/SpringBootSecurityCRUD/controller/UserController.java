@@ -36,7 +36,7 @@ public class UserController {
 	public String getAllUsers(@AuthenticationPrincipal UserDetails user, Model model) {
 		model.addAttribute("user", userService.getUserByUsername(user.getUsername()));
 		model.addAttribute("users", userService.getAllUsers());
-		return "index";
+		return "admin";
 	}
 
 	@GetMapping("/user")
