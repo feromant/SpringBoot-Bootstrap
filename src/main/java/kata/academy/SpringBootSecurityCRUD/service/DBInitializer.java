@@ -1,6 +1,5 @@
 package kata.academy.SpringBootSecurityCRUD.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kata.academy.SpringBootSecurityCRUD.model.Role;
@@ -12,8 +11,11 @@ import java.util.Set;
 @Service
 public class DBInitializer {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public DBInitializer(UserService userService) {
+        this.userService = userService;
+    }
 
     @Transactional
     @PostConstruct

@@ -4,12 +4,10 @@ import kata.academy.SpringBootSecurityCRUD.model.Role;
 import kata.academy.SpringBootSecurityCRUD.model.User;
 import kata.academy.SpringBootSecurityCRUD.service.UserService;
 import kata.academy.SpringBootSecurityCRUD.service.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,10 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,30 +24,16 @@ import java.util.Set;
 @RequestMapping("/")
 public class UserController {
 
-	@Autowired
-	private UserService userService;
+	private final UserService userService;
+	private final RoleService roleService;
 
-	@Autowired
-	private RoleService roleService;
-
-	@RequestMapping(value = "hello", method = RequestMethod.GET)
-	public String printWelcome(ModelMap model) {
-		List<String> messages = new ArrayList<>();
-		messages.add("Hello!");
-		messages.add("I'm Spring MVC-SECURITY application");
-		messages.add("5.2.0 version by sep'19 ");
-		model.addAttribute("messages", messages);
-		return "access_denied";
+	public UserController(UserService userService, RoleService roleService) {
+		this.userService = userService;
+		this.roleService = roleService;
 	}
-
-//    @GetMapping("login")
-//    public String loginPage() {
-//        return "login";
-//    }
 
 	@GetMapping("/admin")
 	public String getAllUsers(@AuthenticationPrincipal UserDetails user, Model model) {
-//		model.addAttribute("user", userService.getUserById(id));
 		model.addAttribute("user", userService.getUserByUsername(user.getUsername()));
 		model.addAttribute("users", userService.getAllUsers());
 		return "index";
@@ -60,7 +42,6 @@ public class UserController {
 	@GetMapping("/user")
 	public String getUserById(@AuthenticationPrincipal UserDetails user, Model model) {
 		model.addAttribute("user", userService.getUserByUsername(user.getUsername()));
-//		model.addAttribute("user", userService.getUserById(id));
 		return "user";
 	}
 
@@ -69,50 +50,18 @@ public class UserController {
 		return roleService.getAllRoles();
 	}
 
-//	@GetMapping("/admin/new")
-//	public String addUser(Model model) {
-//		model.addAttribute("user", new User());
-//		return "new";
-//	}
-
 	@PostMapping("/admin/new")
 	public String addUser(@ModelAttribute("user") User user,
 						  @RequestParam(value = "roles") Set<Role> roles) {
-		if (roles != null) {
-			for (Role role : roles) {
-				if ("ADMIN".equals(role.getRole())) {
-					role.setId(1L);
-				}
-				else if ("USER".equals(role.getRole())) {
-					role.setId(2L);
-				}
-				user.addRole(role);
-			}
-		}
+		setIdToRoles(roles, user);
 		userService.addUser(user);
 		return "redirect:/admin";
 	}
 
-//	@GetMapping("/admin/edit/{id}")
-//	public String updateUserById(@PathVariable("id") Long id, Model model) {
-//		model.addAttribute("user", userService.getUserById(id));
-//		return "edit";
-//	}
-
 	@PutMapping("/admin/edit/{id}")
 	public String updateUser(@ModelAttribute("user") User user,
 							 @RequestParam(value = "roles") Set<Role> roles) {
-		if (roles != null) {
-			for (Role role : roles) {
-				if ("ADMIN".equals(role.getRole())) {
-					role.setId(1L);
-				}
-				else if ("USER".equals(role.getRole())) {
-					role.setId(2L);
-				}
-				user.addRole(role);
-			}
-		}
+		setIdToRoles(roles, user);
 		userService.updateUser(user);
 		return "redirect:/admin";
 	}
@@ -120,5 +69,19 @@ public class UserController {
 	public String deleteUserById(@PathVariable("id") Long id) {
 		userService.deleteUserById(id);
 		return "redirect:/admin";
+	}
+
+	private void setIdToRoles(Set<Role> roles, User user) {
+		if (roles != null) {
+			for (Role role : roles) {
+				if ("ADMIN".equals(role.getRole())) {
+					role.setId(1L);
+				}
+				else if ("USER".equals(role.getRole())) {
+					role.setId(2L);
+				}
+				user.addRole(role);
+			}
+		}
 	}
 }
